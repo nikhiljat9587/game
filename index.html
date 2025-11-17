@@ -1,33 +1,123 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Snake Game</title>
+    <title>Snake Pro Max</title>
+    
     <style>
-        body {
-            background: black;
-            margin: 0;
-            overflow: hidden;
-        }
-        canvas {
-            display: block;
-            margin: auto;
-            background: #000;
-        }
+   body {
+    background: #000;
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial;
+}
+
+/* MENU */
+#menu {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    color: #0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#menu h1 {
+    font-size: 50px;
+}
+#menu button {
+    padding: 15px 40px;
+    font-size: 22px;
+    border: none;
+    background: #0f0;
+    color: #000;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* CANVAS */
+#game {
+    display: none;
+    margin: auto;
+    background: #111;
+}
+
+/* SCORE */
+#scoreBox {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    color: #0f0;
+    font-size: 20px;
+}
+
+/* PUBG JOYSTICK */
+#joystickOuter {
+    position: absolute;
+    left: 40px;
+    bottom: 40px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(200,200,200,0.2);
+    display: none;
+}
+#joystickInner {
+    position: absolute;
+    left: 35px;
+    top: 35px;
+    width: 50px;
+    height: 50px;
+    background: rgba(240,240,240,0.9);
+    border-radius: 50%;
+}
+
+/* BOOST BUTTON */
+#boostBtn {
+    position: absolute;
+    right: 50px;
+    bottom: 60px;
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,0,0.8);
+    border-radius: 50%;
+    font-size: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
     </style>
+
+
 </head>
 <body>
 
+<div id="menu">
+    <h1>SNAKE PRO MAX</h1>
+    <button id="startBtn">START GAME</button>
+</div>
 
-<canvas id="game" width="600" height="600" style="background:red;"></canvas>
+<canvas id="game" width="600" height="600"></canvas>
 
-<!-- MOBILE CONTROLS -->
-<div style="text-align:center; margin-top:20px;">
-    <button onclick="dir(0,-1)" style="padding:15px;">UP</button><br>
-    <button onclick="dir(-1,0)" style="padding:15px;">LEFT</button>
-    <button onclick="dir(1,0)" style="padding:15px;">RIGHT</button><br>
-    <button onclick="dir(0,1)" style="padding:15px;">DOWN</button>
+<!-- JOYSTICK LEFT -->
+<div id="joystickOuter">
+    <div id="joystickInner"></div>
+</div>
+
+<!-- BOOST BUTTON -->
+<div id="boostBtn">⚡</div>
+
+<!-- SCORE BOARD -->
+<div id="scoreBox">
+    Score: <span id="score">0</span><br>
+    High Score: <span id="highScore">0</span>
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
+
