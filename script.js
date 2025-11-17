@@ -1,156 +1,106 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const startBtn = document.getElementById("startBtn");
-const menu = document.getElementById("menu");
+let size = 30;
 
-const joystickOuter = document.getElementById("joystickOuter");
-const joystickInner = document.getElementById("joystickInner");
-const boostBtn = document.getElementById("boostBtn");
+// Auto-fit canvas for all phones
+function resize() {
+    let s = Math.min(window.innerWidth, window.innerHeight) - 20;
+    canvas.width = s;
+    canvas.height = s;
+}
+resize();
+window.onresize = resize;
 
-const scoreBox = document.getElementById("scoreBox");
-const scoreSpan = document.getElementById("score");
-const highScoreSpan = document.getElementById("highScore");
+let speed = 120;
+let lastMoveTime = 0;
 
-let highScore = localStorage.getItem("snakeHS") || 0;
-highScoreSpan.textContent = highScore;
-
-const size = 30;
 let snake = [];
 let direction = { x: 1, y: 0 };
-let nextDir = { x: 1, y: 0 };
 let food = { x: 0, y: 0 };
 let length = 3;
 
-let speed = 150;
-let lastMove = 0;
-let score = 0;
-let boosted = false;
-
+// Images
 const headImg = new Image();
 const bodyImg = new Image();
 const foodImg = new Image();
 
+// Sounds
+const eatSound = new Audio("eat.mp3");
+const outSound = new Audio("out.mp3");
+
+// Load images
 headImg.src = "head.png";
 bodyImg.src = "body.png";
 foodImg.src = "food.png";
 
-const eatSound = new Audio("eat.mp3");
-const outSound = new Audio("out.mp3");
-
-startBtn.onclick = () => {
-    menu.style.display = "none";
-    canvas.style.display = "block";
-    joystickOuter.style.display = "block";
-    boostBtn.style.display = "flex";
-
-    startGame();
-};
+headImg.onload = () => startGame();
 
 function startGame() {
-    snake = [{ x: 300, y: 300 }];
+    snake = [{ x: 5 * size, y: 5 * size }];
     direction = { x: 1, y: 0 };
-    nextDir = { x: 1, y: 0 };
     length = 3;
-    score = 0;
-    speed = 150;
-
-    scoreSpan.textContent = 0;
     placeFood();
-
     requestAnimationFrame(gameLoop);
 }
 
 function placeFood() {
-    food.x = Math.floor(Math.random() * 20) * size;
-    food.y = Math.floor(Math.random() * 20) * size;
+    let cols = Math.floor(canvas.width / size);
+    let rows = Math.floor(canvas.height / size);
+
+    food.x = Math.floor(Math.random() * cols) * size;
+    food.y = Math.floor(Math.random() * rows) * size;
 }
 
-document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowUp") nextDir = { x: 0, y: -1 };
-    if (e.key === "ArrowDown") nextDir = { x: 0, y: 1 };
-    if (e.key === "ArrowLeft") nextDir = { x: -1, y: 0 };
-    if (e.key === "ArrowRight") nextDir = { x: 1, y: 0 };
-});
-
-boostBtn.onmousedown = () => boosted = true;
-boostBtn.onmouseup = () => boosted = false;
-
-// JOYSTICK TOUCH
-joystickOuter.addEventListener("touchmove", (e) => {
-    let touch = e.touches[0];
-    let rect = joystickOuter.getBoundingClientRect();
-
-    let x = touch.clientX - rect.left - 60;
-    let y = touch.clientY - rect.top - 60;
-
-    joystickInner.style.left = (60 + x / 2) + "px";
-    joystickInner.style.top = (60 + y / 2) + "px";
-
-    if (Math.abs(x) > Math.abs(y)) {
-        nextDir = { x: x > 0 ? 1 : -1, y: 0 };
-    } else {
-        nextDir = { x: 0, y: y > 0 ? 1 : -1 };
-    }
-});
-joystickOuter.addEventListener("touchend", () => {
-    joystickInner.style.left = "35px";
-    joystickInner.style.top = "35px";
-});
-
-function rotate(img, x, y, angle) {
+function drawRotated(img, x, y, angle) {
     ctx.save();
     ctx.translate(x + size / 2, y + size / 2);
     ctx.rotate(angle * Math.PI / 180);
-    ctx.drawImage(img, -15, -15, size, size);
+    ctx.drawImage(img, -size / 2, -size / 2, size, size);
     ctx.restore();
 }
 
 function gameOver() {
     outSound.play();
-    alert("GAME OVER!");
-
-    if (score > highScore) {
-        localStorage.setItem("snakeHS", score);
-    }
-    location.reload();
+    if (navigator.vibrate) navigator.vibrate(200);
+    setTimeout(startGame, 500);
 }
 
-function gameLoop(time) {
-    if (time - lastMove < speed - (boosted ? 90 : 0)) {
-        return requestAnimationFrame(gameLoop);
+function gameLoop(t) {
+    if (t - lastMoveTime < speed) {
+        requestAnimationFrame(gameLoop);
+        return;
     }
-    lastMove = time;
-
-    direction = nextDir;
+    lastMoveTime = t;
 
     let head = {
         x: snake[snake.length - 1].x + direction.x * size,
         y: snake[snake.length - 1].y + direction.y * size
     };
 
-    if (head.x < 0 || head.x >= 600 || head.y < 0 || head.y >= 600) {
-        return gameOver();
+    // OUT LOGIC
+    if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+        gameOver();
+        return;
     }
 
     snake.push(head);
     if (snake.length > length) snake.shift();
 
+    // EAT FOOD
     if (head.x === food.x && head.y === food.y) {
-        eatSound.play();
         length++;
-        score++;
-        scoreSpan.textContent = score;
-
-        if (speed > 60) speed -= 5; // auto level up
-
+        eatSound.play();
         placeFood();
     }
 
-    ctx.clearRect(0, 0, 600, 600);
+    // DRAW
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // FOOD
     ctx.drawImage(foodImg, food.x, food.y, size, size);
 
+    // BODY
     for (let i = 0; i < snake.length - 1; i++) {
         let s = snake[i];
         let n = snake[i + 1];
@@ -161,10 +111,11 @@ function gameLoop(time) {
         if (n.y > s.y) angle = 180;
         if (n.y < s.y) angle = 0;
 
-        rotate(bodyImg, s.x, s.y, angle);
+        drawRotated(bodyImg, s.x, s.y, angle);
     }
 
-    let last = snake[snake.length - 1];
+    // HEAD
+    let h = snake[snake.length - 1];
     let angle = 0;
 
     if (direction.x === 1) angle = 270;
@@ -172,7 +123,36 @@ function gameLoop(time) {
     if (direction.y === 1) angle = 180;
     if (direction.y === -1) angle = 0;
 
-    rotate(headImg, last.x, last.y, angle);
+    drawRotated(headImg, h.x, h.y, angle);
 
     requestAnimationFrame(gameLoop);
 }
+
+/* ---- DESKTOP CONTROLS ---- */
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowUp" && direction.y !== 1) direction = { x: 0, y: -1 };
+    if (e.key === "ArrowDown" && direction.y !== -1) direction = { x: 0, y: 1 };
+    if (e.key === "ArrowLeft" && direction.x !== 1) direction = { x: -1, y: 0 };
+    if (e.key === "ArrowRight" && direction.x !== -1) direction = { x: 1, y: 0 };
+});
+
+/* ---- MOBILE SWIPE CONTROL ---- */
+let sx = 0, sy = 0;
+
+canvas.addEventListener("touchstart", e => {
+    sx = e.touches[0].clientX;
+    sy = e.touches[0].clientY;
+});
+
+canvas.addEventListener("touchend", e => {
+    let dx = e.changedTouches[0].clientX - sx;
+    let dy = e.changedTouches[0].clientY - sy;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 0 && direction.x !== -1) direction = { x: 1, y: 0 };
+        else if (dx < 0 && direction.x !== 1) direction = { x: -1, y: 0 };
+    } else {
+        if (dy > 0 && direction.y !== -1) direction = { x: 0, y: 1 };
+        else if (dy < 0 && direction.y !== 1) direction = { x: 0, y: -1 };
+    }
+});
