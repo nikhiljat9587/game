@@ -37,14 +37,14 @@
     .login{flex-direction:column;width:100%}
     input[type=text]{width:100%}
     .board-wrap{padding:4px;border-width:2px}
-    canvas{height:70vh;width:100%}
+    canvas{height:60vh;width:100%}
     .control-btn{width:46px;height:46px}
   }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Snake Game</h1>
+    <h1>Snake Game — Enhanced</h1>
     <div class="topbar">
       <div class="scorebox">
         <div>Score: <span id="score">0</span></div>
@@ -52,7 +52,11 @@
         <div>Speed: <span id="spd">Normal</span></div>
       </div>
 
- 
+      <div class="login">
+        <input id="name" type="text" placeholder="Your name (for online)" hidden />
+        <input id="wsurl" type="text" placeholder="WebSocket URL (optional)" style="min-width:220px" hidden />
+        <button id="connectBtn" class="btn small" hidden>Connect</button>
+      </div>
     </div>
 
     <div class="board-wrap">
@@ -523,4 +527,3 @@ document.addEventListener('visibilitychange', ()=>{
 </script>
 </body>
 </html>
-
