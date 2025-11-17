@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snake Game</title>
+    <style>
+        body {
+            background: black;
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            margin: auto;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+
+
+<canvas id="game" width="600" height="600" style="background:red;"></canvas>
+
+<!-- MOBILE CONTROLS -->
+<div style="text-align:center; margin-top:20px;">
+    <button onclick="dir(0,-1)" style="padding:15px;">UP</button><br>
+    <button onclick="dir(-1,0)" style="padding:15px;">LEFT</button>
+    <button onclick="dir(1,0)" style="padding:15px;">RIGHT</button><br>
+    <button onclick="dir(0,1)" style="padding:15px;">DOWN</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
